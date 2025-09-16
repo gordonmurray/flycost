@@ -1,0 +1,10 @@
+root: "."
+assumptions:
+  egress_gb_per_app: 100
+  ipv4_per_app: 1
+  default_volume_gb: 10
+  postgres_monthly_usd: 0
+bandwidth_rates:
+  default: 0.02
+  iad: 0.02
+  cdg: 0.02

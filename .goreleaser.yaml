@@ -1,0 +1,76 @@
+project_name: flycost
+
+builds:
+  - id: flycost
+    main: ./cmd/flycost
+    env: [CGO_ENABLED=0]
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+    flags:
+      - -trimpath
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+
+release:
+  github:
+    owner: gordonmurray
+    name: flycost
+  draft: false
+  prerelease: auto
+  name_template: "v{{ .Version }}"
+  header: |
+    ## 🎉 flycost v{{ .Version }}
+
+    Fly.io cost estimation tool - analyze your `fly.toml` files and get monthly cost estimates.
+
+    ### Installation
+
+    **Quick install:**
+    ```bash
+    curl -sSLf https://github.com/gordonmurray/flycost/releases/latest/download/install.sh | bash
+    ```
+
+    **Manual install:**
+    Download the appropriate binary for your platform from the assets below.
+
+  footer: |
+    ## 📋 Usage
+
+    ```bash
+    # Estimate costs for current directory
+    flycost
+
+    # Scan specific directory
+    flycost -root ./my-fly-apps
+
+    # Output as JSON for CI/CD
+    flycost -format json
+    ```
+
+    **Full documentation:** https://github.com/gordonmurray/flycost#readme
+
+extra_files:
+  - glob: install.sh

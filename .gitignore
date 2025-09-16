@@ -1,0 +1,47 @@
+# Binaries
+flycost
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test files
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local development
+.env
+.env.local
+.tool-versions
+
+# Claude Code settings (keep local only)
+.claude/
+
+# Release artifacts
+dist/
+*.tar.gz
+*.zip
+*.tmp
+
+# Temp files
+debug.go

@@ -1,0 +1,32 @@
+# Machine Learning inference worker
+app = "ml-inference-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  MODEL_PATH = "/app/models"
+  TORCH_HOME = "/app/cache"
+  WORKERS = "4"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  max_machines_running = 3
+
+[[vm]]
+cpus = 4
+cpu_kind = "performance"
+memory_mb = 16384
+
+[[mounts]]
+source = "model_storage"
+destination = "/app/models"
+
+[[mounts]]
+source = "cache_storage"
+destination = "/app/cache"

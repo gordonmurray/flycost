@@ -1,0 +1,22 @@
+{
+  "ram_per_gb_month": 4.26,
+  "volume_gb_month": 0.15,
+  "egress_gb_by_region": {
+    "default": 0.02,
+    "iad": 0.02,
+    "cdg": 0.02,
+    "lhr": 0.02,
+    "nrt": 0.04,
+    "syd": 0.04
+  },
+  "vm_preset_month": {
+    "shared-cpu-1x": 1.94,
+    "shared-cpu-2x": 3.88,
+    "shared-cpu-4x": 7.76,
+    "shared-cpu-8x": 15.52,
+    "performance-1x": 31.0,
+    "performance-2x": 62.0,
+    "performance-4x": 124.0,
+    "performance-8x": 248.0
+  }
+}
