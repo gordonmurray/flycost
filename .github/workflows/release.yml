@@ -1,22 +1,94 @@
-name: release
+name: Release
 
 on:
   push:
     tags: ["v*.*.*"]
 
+permissions:
+  contents: write
+
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with: { go-version: "1.22.x" }
-      - run: go mod download
-      - uses: goreleaser/goreleaser-action@v6
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          version: latest
-          args: release --clean
+          go-version: '1.22'
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+
+          # Linux amd64
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/flycost ./cmd/flycost
+          tar -czf dist/flycost_linux_amd64.tar.gz -C dist flycost README.md install.sh
+          rm dist/flycost
+
+          # Linux arm64
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o dist/flycost ./cmd/flycost
+          tar -czf dist/flycost_linux_arm64.tar.gz -C dist flycost README.md install.sh
+          rm dist/flycost
+
+          # macOS amd64
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/flycost ./cmd/flycost
+          tar -czf dist/flycost_darwin_amd64.tar.gz -C dist flycost README.md install.sh
+          rm dist/flycost
+
+          # macOS arm64 (Apple Silicon)
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/flycost ./cmd/flycost
+          tar -czf dist/flycost_darwin_arm64.tar.gz -C dist flycost README.md install.sh
+          rm dist/flycost
+
+          # Create checksums
+          cd dist
+          sha256sum *.tar.gz > checksums.txt
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -z "$(git tag --sort=-version:refname | head -2 | tail -1)" ]; then
+            echo "changelog=Initial release of flycost - Fly.io cost estimation tool" >> $GITHUB_OUTPUT
+          else
+            PREV_TAG=$(git tag --sort=-version:refname | head -2 | tail -1)
+            CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD | grep -v "^- Merge")
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGELOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Installation
+
+            **Quick install:**
+            ```bash
+            curl -sSLf https://github.com/gordonmurray/flycost/releases/latest/download/install.sh | bash
+            ```
+
+            **Manual install:**
+            Download the appropriate binary for your system from the assets below.
+
+            ## Checksums
+
+            ```
+            $(cat dist/checksums.txt)
+            ```
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+            install.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
