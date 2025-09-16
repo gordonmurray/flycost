@@ -13,17 +13,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-
-      - name: Debug directory structure
-        run: |
-          pwd
-          ls -la
-          ls -la cmd/
 
       - name: Run tests
         run: go test ./...
@@ -63,15 +59,7 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          if [ -z "$(git tag --sort=-version:refname | head -2 | tail -1)" ]; then
-            echo "changelog=Initial release of flycost - Fly.io cost estimation tool" >> $GITHUB_OUTPUT
-          else
-            PREV_TAG=$(git tag --sort=-version:refname | head -2 | tail -1)
-            CHANGELOG=$(git log --pretty=format:"- %s" $PREV_TAG..HEAD | grep -v "^- Merge")
-            echo "changelog<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGELOG" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
+          echo "changelog=Fly.io cost estimation tool - estimate monthly costs for your fly.toml configurations" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
