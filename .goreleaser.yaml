@@ -3,7 +3,7 @@ project_name: flycost
 
 builds:
   - id: flycost
-    main: cmd/flycost/main.go
+    dir: cmd/flycost
     env: [CGO_ENABLED=0]
     goos: [linux, darwin]
     goarch: [amd64, arm64]
