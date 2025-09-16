@@ -1,3 +1,4 @@
+version: 2
 project_name: flycost
 
 builds:
@@ -17,9 +18,9 @@ archives:
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     files:
       - README.md
-      - LICENSE
+      - install.sh
 
-checksum:
+checksums:
   name_template: "checksums.txt"
 
 changelog:
@@ -71,6 +72,3 @@ release:
     ```
 
     **Full documentation:** https://github.com/gordonmurray/flycost#readme
-
-extra_files:
-  - glob: install.sh
