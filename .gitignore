@@ -1,5 +1,5 @@
 # Binaries
-flycost
+/flycost
 *.exe
 *.exe~
 *.dll
