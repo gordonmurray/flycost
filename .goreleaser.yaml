@@ -20,9 +20,6 @@ archives:
       - README.md
       - install.sh
 
-checksums:
-  name_template: "checksums.txt"
-
 changelog:
   sort: asc
   filters:
