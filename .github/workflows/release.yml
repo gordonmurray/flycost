@@ -26,6 +26,10 @@ jobs:
         run: |
           mkdir -p dist
 
+          # Copy files needed for archives
+          cp README.md dist/
+          cp install.sh dist/
+
           # Linux amd64
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/flycost ./cmd/flycost
           tar -czf dist/flycost_linux_amd64.tar.gz -C dist flycost README.md install.sh
