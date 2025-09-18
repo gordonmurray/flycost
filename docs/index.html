@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flycost.io - Cost Estimation for Fly.io</title>
+    <meta name="description" content="Estimate monthly costs for your Fly.io applications by analyzing fly.toml files. Like Infracost but for Fly.io.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f1f5f9;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .hero {
+            padding: 4rem 0;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .features {
+            padding: 4rem 0;
+            background: white;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--secondary);
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .quick-start {
+            padding: 4rem 0;
+            background: var(--secondary);
+        }
+
+        .install-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .install-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .install-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .demo {
+            padding: 4rem 0;
+            background: white;
+        }
+
+        .demo-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin-top: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .stat {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .stat-label {
+            opacity: 0.8;
+            color: white;
+        }
+
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">💰 flycost.io</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#install">Install</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="https://github.com/gordonmurray/flycost">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Cost Estimation for Fly.io</h1>
+            <p>Analyze your fly.toml files and estimate monthly costs for compute, storage, bandwidth, and IP addresses</p>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">🚀</div>
+                    <div class="stat-label">Like Infracost</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">⚡</div>
+                    <div class="stat-label">But for Fly.io</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">💯</div>
+                    <div class="stat-label">Open Source</div>
+                </div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="#install" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/gordonmurray/flycost" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 1rem;">Why flycost?</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Get accurate cost estimates before deploying to Fly.io</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Comprehensive Analysis</h3>
+                    <p>Analyzes compute, storage, bandwidth, and IP address costs from your fly.toml configuration</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast & Lightweight</h3>
+                    <p>Single binary with no dependencies. Scan multiple projects in seconds</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>CI/CD Ready</h3>
+                    <p>Perfect for GitHub Actions, GitLab CI, and other automation pipelines</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Multiple Formats</h3>
+                    <p>Output as human-readable tables or machine-parseable JSON</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Accurate Pricing</h3>
+                    <p>Based on official Fly.io pricing with regular updates</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>Configurable</h3>
+                    <p>Customize assumptions for bandwidth usage, volumes, and IP addresses</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="quick-start">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 1rem;">Quick Start</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">Get flycost running in under a minute</p>
+
+            <div class="install-options">
+                <div class="install-card">
+                    <h3>🍎 macOS / 🐧 Linux</h3>
+                    <p>One-line installer (recommended)</p>
+                    <div class="code-block"># Review script first (optional but recommended):
+# curl -sSLf https://github.com/gordonmurray/flycost/releases/latest/download/install.sh
+
+curl -sSLf https://github.com/gordonmurray/flycost/releases/latest/download/install.sh | bash</div>
+                </div>
+
+                <div class="install-card">
+                    <h3>📦 Manual Download</h3>
+                    <p>Download and install manually</p>
+                    <div class="code-block">OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m | sed 's/x86_64/amd64/; s/aarch64/arm64/')
+wget "https://github.com/gordonmurray/flycost/releases/latest/download/flycost_${OS}_${ARCH}.tar.gz"
+tar -xzf flycost_*.tar.gz
+sudo mv flycost /usr/local/bin/</div>
+                </div>
+
+                <div class="install-card">
+                    <h3>🛠️ Build from Source</h3>
+                    <p>For Go developers</p>
+                    <div class="code-block">git clone https://github.com/gordonmurray/flycost.git
+cd flycost
+go build -o flycost ./cmd/flycost</div>
+                </div>
+
+                <div class="install-card">
+                    <h3>🚀 Basic Usage</h3>
+                    <p>Start analyzing costs</p>
+                    <div class="code-block"># Scan current directory
+flycost
+
+# Scan specific directory
+flycost -root ./my-apps
+
+# Output as JSON
+flycost -format json</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 1rem;">Example Output</h2>
+            <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">See what flycost shows for different application types</p>
+
+            <div class="demo-output"><pre style="margin: 0; white-space: pre-wrap;">Kind        Monthly  App               Note                     File
+----------- -------  ----------------- ------------------------ ---------------------
+compute     $  1.94  user-service      shared-cpu-1x 1024MB     express-microservice.toml
+volume      $  1.50  user-service      10 GB (assumed)          express-microservice.toml
+bandwidth   $  2.00  user-service      lhr 100 GB               express-microservice.toml
+ip          $  2.00  user-service      1 IPv4 (assumed)         express-microservice.toml
+compute     $ 82.12  ml-inference-api  performance-1x 16384MB   ml-worker.toml
+volume      $  1.50  ml-inference-api  10 GB (assumed)          ml-worker.toml
+bandwidth   $  2.00  ml-inference-api  iad 100 GB               ml-worker.toml
+ip          $  2.00  ml-inference-api  1 IPv4 (assumed)         ml-worker.toml
+compute     $  3.88  my-rails-api      shared-cpu-2x 2048MB     rails-api.toml
+compute     $  1.94  my-rails-api      shared-cpu-1x 1024MB     rails-api.toml
+volume      $  1.50  my-rails-api      10 GB (assumed)          rails-api.toml
+bandwidth   $  2.00  my-rails-api      cdg 100 GB               rails-api.toml
+ip          $  2.00  my-rails-api      1 IPv4 (assumed)         rails-api.toml
+compute     $  1.94  my-react-app      shared-cpu-1x 256MB      react-spa.toml
+bandwidth   $  2.00  my-react-app      iad 100 GB               react-spa.toml
+ip          $  2.00  my-react-app      1 IPv4 (assumed)         react-spa.toml
+
+<span style="color: #10b981; font-weight: bold;">TOTAL: $112.32 / mo</span></pre></div>
+
+            <div style="margin-top: 2rem; text-align: center;">
+                <h3 style="margin-bottom: 1rem;">Sample Applications</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; text-align: left;">
+                    <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px;">
+                        <strong>React SPA</strong><br>
+                        <span style="color: var(--text-light);">Static app with CDN</span><br>
+                        <span style="color: var(--success); font-weight: bold;">$5.94/month</span>
+                    </div>
+                    <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px;">
+                        <strong>Express API</strong><br>
+                        <span style="color: var(--text-light);">Node.js microservice</span><br>
+                        <span style="color: var(--warning); font-weight: bold;">$7.44/month</span>
+                    </div>
+                    <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px;">
+                        <strong>Rails API</strong><br>
+                        <span style="color: var(--text-light);">Multi-instance with volumes</span><br>
+                        <span style="color: var(--warning); font-weight: bold;">$13.32/month</span>
+                    </div>
+                    <div style="background: var(--secondary); padding: 1.5rem; border-radius: 8px;">
+                        <strong>ML Worker</strong><br>
+                        <span style="color: var(--text-light);">High-performance inference</span><br>
+                        <span style="color: #ef4444; font-weight: bold;">$87.62/month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/gordonmurray/flycost">GitHub</a>
+                <a href="https://github.com/gordonmurray/flycost/releases">Releases</a>
+                <a href="https://github.com/gordonmurray/flycost/issues">Issues</a>
+                <a href="https://fly.io/docs/about/pricing">Fly.io Pricing</a>
+            </div>
+            <p>&copy; 2025 flycost.io - Open source cost estimation for Fly.io</p>
+        </div>
+    </footer>
+</body>
+</html>
