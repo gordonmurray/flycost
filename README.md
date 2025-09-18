@@ -140,7 +140,7 @@ destination = "/app/uploads"
 
 ## Pricing
 
-Built-in pricing is based on Fly.io's public pricing (as of September 2024):
+Built-in pricing is based on Fly.io's public pricing:
 
 ### Compute (Base VM costs with 256MB RAM)
 - **Shared CPU**: $1.94/mo per vCPU
